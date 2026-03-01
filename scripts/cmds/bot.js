@@ -3,7 +3,7 @@ const axios = require("axios");
 module.exports = {
   config: {
     name: "bot",
-    version: "3.4",
+    version: "3.5",
     author: "LIKHON AHMED",
     countDown: 5,
     role: 0,
@@ -39,6 +39,12 @@ module.exports = {
         body: `╭────────────❍\n╰➤ 👤 𝐃𝐞𝐚𝐫『 ${name} 』,\n╰➤ 🗣 ${replyText}\n╰─────────────────➤`,
         mentions: [{ tag: name, id: event.senderID }]
       }, event.threadID);
+
+      global.GoatBot.onReply.set(msg.messageID, {
+        commandName: module.exports.config.name,
+        author: event.senderID,
+        messageID: msg.messageID
+      });
 
       return msg;
     } catch (err) {
@@ -92,6 +98,12 @@ module.exports = {
         mentions: [{ tag: name, id: event.senderID }]
       }, event.threadID);
 
+      global.GoatBot.onReply.set(msg.messageID, {
+        commandName: module.exports.config.name,
+        author: event.senderID,
+        messageID: msg.messageID
+      });
+
       return msg;
     }
 
@@ -101,6 +113,12 @@ module.exports = {
                          event.senderID !== api.getCurrentUserID();
 
     if (isReplyToBot) {
+      const replyCommandName = global.GoatBot.onReply.get(event.messageReply.messageID)?.commandName;
+      
+      if (replyCommandName !== module.exports.config.name) {
+        return;
+      }
+
       try {
         const data = await usersData.get(event.senderID);
         const name = data?.name || "Friend";
@@ -120,6 +138,12 @@ module.exports = {
           body: `╭────────────❍\n╰➤ 👤 𝐃𝐞𝐚𝐫『 ${name} 』,\n╰➤ 🗣 ${replyText}\n╰─────────────────➤`,
           mentions: [{ tag: name, id: event.senderID }]
         }, event.threadID, event.messageReply.messageID);
+
+        global.GoatBot.onReply.set(msg.messageID, {
+          commandName: module.exports.config.name,
+          author: event.senderID,
+          messageID: msg.messageID
+        });
 
         return msg;
       } catch (err) {
