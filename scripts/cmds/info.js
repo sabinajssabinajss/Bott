@@ -33,7 +33,7 @@ module.exports = {
     const authorFB = "@𝐥𝐢𝐤𝐡𝐨𝐧𝐚𝐡𝐦𝐞𝐝𝟎𝟎𝟗";
     const authorInsta = "𝐧𝐨𝐭𝐢𝐧𝐬𝐭𝐚𝟔𝐓𝟗";
     const status = "𝐌𝐢𝐬𝐬𝐢𝐧𝐠 𝐃𝐞𝐚𝐫 🫠🎀";
-    const uid = "100002251840738";
+    const uid = "61572915213085";
     const accessToken = "6628568379|c1e620fa708a1d5696fb991c1bde5662";
 
     const profilePicUrl = `https://graph.facebook.com/${uid}/picture?height=720&width=720&access_token=${accessToken}`;
