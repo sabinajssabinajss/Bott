@@ -3,7 +3,7 @@ const axios = require("axios");
 module.exports = {
   config: {
     name: "bot",
-    version: "3.5",
+    version: "3.7",
     author: "LIKHON AHMED",
     countDown: 5,
     role: 0,
@@ -106,49 +106,48 @@ module.exports = {
 
       return msg;
     }
+  },
 
-    const isReplyToBot = event.type === "message_reply" && 
-                         event.messageReply && 
-                         event.messageReply.senderID === api.getCurrentUserID() &&
-                         event.senderID !== api.getCurrentUserID();
+  onReply: async ({ api, event, usersData }) => {
+    const text = event.body?.trim();
+    if (!text) return;
+    
+    if (event.senderID === api.getCurrentUserID()) return;
 
-    if (isReplyToBot) {
-      const replyCommandName = global.GoatBot.onReply.get(event.messageReply.messageID)?.commandName;
-      
-      if (replyCommandName !== module.exports.config.name) {
-        return;
-      }
+    const replyData = global.GoatBot.onReply.get(event.messageReply?.messageID);
+    
+    if (!replyData || replyData.commandName !== module.exports.config.name) {
+      return;
+    }
 
+    try {
+      const data = await usersData.get(event.senderID);
+      const name = data?.name || "Friend";
+
+      let apiUrl;
       try {
-        const data = await usersData.get(event.senderID);
-        const name = data?.name || "Friend";
-
-        let apiUrl;
-        try {
-          const apiData = await axios.get('https://raw.githubusercontent.com/MOHAMMAD-NAYAN-07/Nayan/main/api.json');
-          apiUrl = apiData.data.sim;
-        } catch (jsonError) {
-          apiUrl = "http://65.109.80.126:20392";
-        }
-
-        const response = await axios.get(`${apiUrl}/sim?type=ask&ask=${encodeURIComponent(text)}`);
-        const replyText = response.data.data.msg;
-
-        const msg = await api.sendMessage({
-          body: `╭────────────❍\n╰➤ 👤 𝐃𝐞𝐚𝐫『 ${name} 』,\n╰➤ 🗣 ${replyText}\n╰─────────────────➤`,
-          mentions: [{ tag: name, id: event.senderID }]
-        }, event.threadID, event.messageReply.messageID);
-
-        global.GoatBot.onReply.set(msg.messageID, {
-          commandName: module.exports.config.name,
-          author: event.senderID,
-          messageID: msg.messageID
-        });
-
-        return msg;
-      } catch (err) {
-        return api.sendMessage("⚠ API error: " + err.message, event.threadID);
+        const apiData = await axios.get('https://raw.githubusercontent.com/MOHAMMAD-NAYAN-07/Nayan/main/api.json');
+        apiUrl = apiData.data.sim;
+      } catch (jsonError) {
+        apiUrl = "http://65.109.80.126:20392";
       }
+
+      const response = await axios.get(`${apiUrl}/sim?type=ask&ask=${encodeURIComponent(text)}`);
+      const replyText = response.data.data.msg;
+
+      const msg = await api.sendMessage({
+        body: `╭────────────❍\n╰➤ 👤 𝐃𝐞𝐚𝐫『 ${name} 』,\n╰➤ 🗣 ${replyText}\n╰─────────────────➤`,
+        mentions: [{ tag: name, id: event.senderID }]
+      }, event.threadID, event.messageReply?.messageID);
+
+      global.GoatBot.onReply.set(msg.messageID, {
+        commandName: module.exports.config.name,
+        author: event.senderID,
+        messageID: msg.messageID
+      });
+
+    } catch (err) {
+      return api.sendMessage("⚠ API error: " + err.message, event.threadID);
     }
   }
 };
