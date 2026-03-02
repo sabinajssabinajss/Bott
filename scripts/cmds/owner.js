@@ -1,44 +1,81 @@
 module.exports = {
   config: {
     name: "owner",
-    version: "1.4",
-    author: "Tokodori_Frtiz // remodified by cliff",
+    version: "1.8",
+    author: "LIKHON AHMED",
     countDown: 5,
     role: 0,
-    shortDescription: "no prefix owner info",
-    longDescription: "Responds with detailed owner info when 'kakashi' is typed without prefix",
-    category: "auto 🪐",
-    noPrefix: true,
+    shortDescription: "Show owner info",
+    longDescription: "Shows detailed owner information",
+    category: "info",
+    guide: {
+      en: "{p}owner - Show owner info\nOr just type 'owner' without prefix"
+    }
   },
 
-  onStart: async function() {},
+  onStart: async function({ message }) {
+    const ownerInfo = 
+`╭─━━━━━━━━━━━━━━━━━━━─╮
+┃     𝐎𝐖𝐍𝐄𝐑 𝐈𝐍𝐅𝐎 👤     ┃
+┃━━━━━━━━━━━━━━━━━━━┃
+┃ 💳 𝐍𝐀𝐌𝐄 : 𝐋𝐈𝐊𝐇𝐎𝐍 𝐀𝐇𝐌𝐄𝐃
+┃
+┃ 🏡 𝐀𝐃𝐃𝐑𝐄𝐒𝐒 : 𝐃𝐇𝐀𝐊𝐀
+┃
+┃ ☣ 𝐆𝐄𝐍𝐃𝐄𝐑 : 𝐌𝐀𝐋𝐄
+┃
+┃ 🧬 𝐀𝐆𝐄 : 𝟏𝟖+
+┃
+┃ 🗿 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄 : 𝐇𝐈𝐌𝐔
+┃━━━━━━━━━━━━━━━━━━━━━┃
+┃
+┃ ✒ 𝐉𝐎𝐁 : 𝐁𝐎𝐓 𝐃𝐄𝐕𝐄𝐋𝐎𝐏𝐄𝐑
+┃
+┃ 📝 𝐄𝐌𝐀𝐈𝐋 : 𝐌𝐀𝐗𝐉𝐈𝟗@𝐏𝐑𝐎𝐍.𝐌𝐄
+┃
+┃ 🖥 𝐂𝐎𝐍𝐓𝐀𝐂𝐓 : 𝟎𝟏𝟕𝟔𝟏𝟖𝟑𝟖𝟑𝟏𝟔
+┃
+┃━━━━━━━━━━━━━━━━━━━┃
+┃ 🤸‍♀ 𝐁𝐎𝐓 𝐃𝐄𝐕 𝐁𝐘 𝐋𝐈𝐊𝐇𝐎𝐍
+╰─━━━━━━━━━━━━━━━━━━━─╯`;
 
-  onChat: async function({ event, message, getLang }) {
-    if (event.body && event.body.toLowerCase() === "owner") {
-      return message.reply({
-        body: `
-╔════════════════════╗
-║     🌟 𝗢𝘄𝗻𝗲𝗿 𝗜𝗻𝗳𝗼 🌟     ║
-╚════════════════════╝
+    return message.reply(ownerInfo);
+  },
 
-👑 𝗡𝗮𝗺𝗲       : 𝐋𝐢𝐤𝐡𝐨𝐧
-🏡 𝗔𝗱𝗱𝗿𝗲𝘀𝘀   : 🌚🤌🏻, 𝗕𝗮𝗻𝗴𝗹𝗮𝗱𝗲𝘀𝗵  
-⚧ 𝗚𝗲𝗻𝗱𝗲𝗿    : 𝗠𝗮𝗹𝗲  
-🎂 𝗔𝗴𝗲        : 𝟭𝟴+
-🦸 𝗡𝗶𝗰𝗸𝗻𝗮𝗺𝗲  : 𝗢𝗬𝗼𝗻
+  onChat: async function({ event, message }) {
+    try {
+      if (!event.body) return;
+      
+      if (event.body.toLowerCase() === "owner") {
+        const ownerInfo = 
+`╭─━━━━━━━━━━━━━━━━━━━─╮
+┃     𝐎𝐖𝐍𝐄𝐑 𝐈𝐍𝐅𝐎 👤     ┃
+┃━━━━━━━━━━━━━━━━━━━┃
+┃ 💳 𝐍𝐀𝐌𝐄 : 𝐋𝐈𝐊𝐇𝐎𝐍 𝐀𝐇𝐌𝐄𝐃
+┃
+┃ 🏡 𝐀𝐃𝐃𝐑𝐄𝐒𝐒 : 𝐃𝐇𝐀𝐊𝐀
+┃
+┃ ☣ 𝐆𝐄𝐍𝐃𝐄𝐑 : 𝐌𝐀𝐋𝐄
+┃
+┃ 🧬 𝐀𝐆𝐄 : 𝟏𝟖+
+┃
+┃ 🗿 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄 : 𝐇𝐈𝐌𝐔
+┃━━━━━━━━━━━━━━━━━━━━━┃
+┃
+┃ ✒ 𝐉𝐎𝐁 : 𝐁𝐎𝐓 𝐃𝐄𝐕𝐄𝐋𝐎𝐏𝐄𝐑
+┃
+┃ 📝 𝐄𝐌𝐀𝐈𝐋 : 𝐌𝐀𝐗𝐉𝐈𝟗@𝐏𝐑𝐎𝐍.𝐌𝐄
+┃
+┃ 🖥 𝐂𝐎𝐍𝐓𝐀𝐂𝐓 : 𝟎𝟏𝟕𝟔𝟏𝟖𝟑𝟖𝟑𝟏𝟔
+┃
+┃━━━━━━━━━━━━━━━━━━━┃
+┃ 🤸‍♀ 𝐁𝐎𝐓 𝐃𝐄𝐕 𝐁𝐘 𝐋𝐈𝐊𝐇𝐎𝐍
+╰─━━━━━━━━━━━━━━━━━━━─╯`;
 
-💼 𝗢𝗰𝗰𝘂𝗽𝗮𝘁𝗶𝗼𝗻: 𝗦𝗼𝗳𝘁𝘄𝗮𝗿𝗲 𝗗𝗲𝘃𝗲𝗹𝗼𝗽𝗲𝗿  
-📧 𝗘𝗺𝗮𝗶𝗹      : 𝗟𝟭𝟰𝗛𝟬𝗡𝗕𝟬𝗧@𝗴𝗺𝗮𝗶𝗹.𝗰𝗼𝗺  
-📱 𝗖𝗼𝗻𝘁𝗮𝗰𝘁    : +8801XXXXXXXXX  
-
-═══════════════════════════  
-💬 𝗧𝗮𝗹𝗸 𝘁𝗼 𝗞𝗮𝗸𝗮𝘀𝗵𝗶 𝗕𝗼𝘁:  
-⇨ 𝘀𝗶𝗺𝗽𝗹𝘆 𝘀𝗮𝘆 "𝗯𝗼𝘁" 𝗼𝗿 "𝗯𝗯𝘆"  
-⇨ 𝗮𝗻𝗱 𝗵𝗮𝘃𝗲 𝗳𝘂𝗻!  | (• ◡•)|ꨄ︎  
-═══════════════════════════
-      `,
-        attachment: await global.utils.getStreamFromURL("https://drive.google.com/uc?export=view&id=1uy4zwYba6RRWDOvqWxDxWACLjbWRNmgP")
-      });
+        return message.reply(ownerInfo);
+      }
+    } catch (error) {
+      console.error("Owner command error:", error);
     }
   }
-}
+};
