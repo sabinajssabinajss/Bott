@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOT UI DASHBOARD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #020302;
+            --card-bg: rgba(5, 10, 5, 0.92);
+            --inner-box-bg: rgba(0, 255, 0, 0.03);
+            --glass-border: rgba(0, 255, 0, 0.2);
+            --text-main: #ffffff;
+            --text-muted: #88cc88;
+            --neon-green: #00ff00;
+            --neon-glow: rgba(0, 255, 0, 0.5);
+            --online-color: #2ecc71;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.6; 
+        }
+
+        .card-wrapper {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            padding: 3px; 
+            border-radius: 16px;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.15);
+            animation: floatCard 6s ease-in-out infinite;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .card-wrapper::before {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent 70%, var(--neon-green) 100%);
+            animation: spinBorder 4s linear infinite;
+            z-index: 1;
+        }
+
+        .card-wrapper::after {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 180deg, transparent 70%, var(--neon-green) 100%);
+            animation: spinBorder 4s linear infinite;
+            z-index: 1;
+        }
+
+        .card-inner {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 40px;
+            backdrop-filter: blur(15px);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        nav {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 15px;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--neon-glow);
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            margin-left: 20px;
+            transition: 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .nav-links a:hover {
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .datetime-container {
+            text-align: center;
+            background: var(--inner-box-bg);
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #clock {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 15px var(--neon-glow);
+        }
+
+        #date {
+            font-size: 0.9rem;
+            color: var(--neon-green);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cyber-ring {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            border: 2px dashed var(--neon-green);
+            border-left: 2px solid transparent;
+            animation: spin 6s linear infinite;
+            box-shadow: 0 0 15px var(--neon-glow);
+        }
+
+        .cyber-ring-inner {
+            position: absolute;
+            top: 8px; left: 8px; right: 8px; bottom: 8px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 255, 0, 0.4);
+            border-top: 2px solid transparent;
+            animation: spin-reverse 4s linear infinite;
+        }
+
+        .profile-img {
+            width: 82%;
+            height: 82%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(0, 255, 0, 0.7);
+            z-index: 2;
+            background-color: #000;
+        }
+
+        .bot-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 900;
+            letter-spacing: 3px;
+            color: var(--text-main);
+            text-shadow: 0 0 15px var(--neon-glow);
+            text-transform: uppercase;
+        }
+
+        .typewriter {
+            color: var(--neon-green);
+            font-size: 1rem;
+            letter-spacing: 2px;
+            border-right: 2px solid var(--neon-green);
+            white-space: nowrap;
+            overflow: hidden;
+            animation: typing 3s steps(22) infinite alternate, blink .75s step-end infinite;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .stat-box {
+            background: var(--inner-box-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 20px 15px;
+            text-align: center;
+            transition: 0.3s ease;
+        }
+
+        .stat-box:hover {
+            background: rgba(0, 255, 0, 0.08);
+            border-color: rgba(0, 255, 0, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.1);
+        }
+
+        .stat-box h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-box p {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        @keyframes floatCard {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); box-shadow: 0 15px 50px rgba(0, 255, 0, 0.2); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes spinBorder { 
+            100% { transform: rotate(360deg); } 
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink {
+            from, to { border-color: transparent }
+            50% { border-color: var(--neon-green) }
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--online-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px var(--online-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+
+        @media (max-width: 600px) {
+            .card-inner {
+                padding: 25px 15px;
+                gap: 25px;
+            }
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .nav-links a {
+                margin: 0 10px;
+                font-size: 0.75rem;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="card-wrapper">
+        <div class="card-inner">
+            <nav>
+                <div class="logo">SYS.CORE</div>
+                <div class="nav-links">
+                    <a href="#">[ Terminal ]</a>
+                </div>
+            </nav>
+
+            <div class="datetime-container">
+                <div id="clock">00:00:00</div>
+                <div id="date">Loading...</div>
+            </div>
+
+            <div class="profile-section">
+                <div class="avatar-container">
+                    <div class="cyber-ring"></div>
+                    <div class="cyber-ring-inner"></div>
+                    
+                    <img src="https://i.ibb.co/Z12HKqXp/saimx69x-fc593d.jpg" alt="Likhon Ahmed" class="profile-img">
+                </div>
+                
+                <div class="bot-name">LIKHON AHMED</div>
+                <div class="typewriter">&gt;&gt; System_Online_</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3>Status</h3>
+                    <p><span class="status-dot"></span> Online</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Servers</h3>
+                    <p>150+</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Users</h3>
+                    <p>50K+</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Uptime</h3>
+                    <p>99.9%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', timeOptions);
+            document.getElementById('date').textContent = now.toLocaleDateString('en-US', dateOptions);
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
+        const fontSize = 14;
+        let columns = canvas.width / fontSize;
+        let drops =[];
+
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(2, 3, 2, 0.15)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.70)'; 
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.985) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            columns = canvas.width / fontSize;
+            drops = [];
+            for (let x = 0; x < columns; x++) drops[x] = 1;
+        });
+
+        setInterval(drawMatrix, 60);
+    </script>
+</body>
+  </html>
