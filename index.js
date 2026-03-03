@@ -1,24 +1,21 @@
-/**
- * Goat Bot Render Deployment Fix by EREN
- */
-
 const express = require("express");
+const path = require("path");
 const { spawn } = require("child_process");
 const log = require("./logger/log.js");
 
-// === Express server to keep Render service alive ===
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(express.static(path.join(__dirname, "public")));
+
 app.get("/", (req, res) => {
-	res.send("KAKASHI BOT RUNNING \n author: nirob \n Status: smooth 🥵");
+	res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.listen(PORT, () => {
 	console.log(`✅ Server running at http://localhost:${PORT}`);
 });
 
-// === Start the Goat bot process ===
 function startProject() {
 	const child = spawn("node", ["Goat.js"], {
 		cwd: __dirname,
