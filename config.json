@@ -9,13 +9,17 @@
     "intervalGetNewCookie": null
   },
   "antiInbox": false,
+  "noPrefixMode": false,
   "language": "en",
   "notesLanguage": "en",
   "adminOnly": {
     "enable": false,
-    "ignoreCommand": [100090095242819]
+    "ignoreCommand": [
+      100090095242819
+    ]
   },
   "adminBot": [
+    "6954597258",
     "1086955587",
     "100090095242819",
     "61572915213085"
@@ -23,6 +27,7 @@
   "whiteListMode": {
     "enable": false,
     "whiteListIds": [
+      "6954597258",
       "100090095242819",
       "61572915213085",
       "1086955587"
