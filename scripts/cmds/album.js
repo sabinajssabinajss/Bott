@@ -22,7 +22,7 @@ module.exports = {
   },
 
   onStart: async function ({ api, event, args, message }) {
-    const ALBUM_JSON_URL = "https://raw.githubusercontent.com/likhontheoldstyle/LIKHON-FMS-VIDEO-JSON/refs/heads/main/album/album.json";
+    const ALBUM_JSON_URL = "https://raw.githubusercontent.com/likhontheoldstyle/LIKHON-APiS-JSON/refs/heads/main/album/album.json";
 
     try {
       api.setMessageReaction("⏳", event.messageID, (err) => {
@@ -65,28 +65,29 @@ module.exports = {
           albumData[cat] && albumData[cat].length > 0
         );
         
-        const categoryList = categories.map((cat, index) => {
-          const emoji = categoryEmojis[cat] || "📹";
-          const name = cat.charAt(0).toUpperCase() + cat.slice(1);
-          return ` ${index + 1}. ${emoji} 𝐀𝐥𝐛𝐮𝐦 𝐍𝐚𝐦𝐞: ${name} ─ 🎬 ${albumData[cat].length} 𝐯𝐢𝐝𝐞𝐨𝐬`;
-        }).join("\n");
-
         const totalVideos = categories.reduce((sum, cat) => sum + albumData[cat].length, 0);
 
+        let categoryList = "";
+        categories.forEach((cat, index) => {
+          const emoji = categoryEmojis[cat] || "📹";
+          const name = cat.charAt(0).toUpperCase() + cat.slice(1);
+          categoryList += ` ${index + 1}. ${emoji} 𝐀𝐥𝐛𝐮𝐦 : ${name} ─ 🎬 ${albumData[cat].length} \n\n`;
+        });
+
         const msg = 
-"╭────────────────────────────────────╮\n" +
+"╭──────────────────╮\n" +
 "│        📀 𝐕𝐈𝐃𝐄𝐎 𝐀𝐋𝐁𝐔𝐌 📀          │\n" +
-"├────────────────────────────────────┤\n" +
+"├─────────────────────┤\n" +
 `│  🎥 𝐓𝐨𝐭𝐚𝐥 𝐕𝐢𝐝𝐞𝐨𝐬: ${totalVideos} 𝐯𝐢𝐝𝐞𝐨𝐬      │\n` +
-"╰────────────────────────────────────╯\n\n" +
+"╰──────────────────╯\n\n" +
 categoryList +
-"\n\n┌────────────────────────────────────┐\n" +
+"\n┌─────────────────────┐\n" +
 "│           💡 𝐇𝐨𝐰 𝐓𝐨 𝐔𝐬𝐞            │\n" +
-"├────────────────────────────────────┤\n" +
-"│  🎯 𝐑𝐞𝐩𝐥𝐲 𝐰𝐢𝐭𝐡 𝐧𝐮𝐦𝐛𝐞𝐫 𝐭𝐨 𝐩𝐥𝐚𝐲    │\n" +
-"│  📝 𝐄𝐱𝐚𝐦𝐩𝐥𝐞: /𝐚𝐥𝐛𝐮𝐦 𝐟𝐮𝐧𝐧𝐲         │\n" +
-"│  🔍 𝐓𝐲𝐩𝐞 𝐜𝐚𝐭𝐞𝐠𝐨𝐫𝐲 𝐧𝐚𝐦𝐞 𝐝𝐢𝐫𝐞𝐜𝐭𝐥𝐲    │\n" +
-"└────────────────────────────────────┘";
+"├────────────────────┤\n" +
+"│  🎯 𝐑𝐞𝐩𝐥𝐲 𝐰𝐢𝐭𝐡 𝐧𝐮𝐦𝐛𝐞𝐫 𝐭𝐨 𝐩𝐥𝐚𝐲     │\n" +
+"│  📝 𝐄𝐱𝐚𝐦𝐩𝐥𝐞: /𝐚𝐥𝐛𝐮𝐦 𝐟𝐮𝐧𝐧𝐲       │\n" +
+"│  🔍 𝐓𝐲𝐩𝐞 𝐜𝐚𝐭𝐞𝐠𝐨𝐫𝐲 𝐧𝐚𝐦𝐞 𝐝𝐢𝐫𝐞𝐜𝐭𝐥𝐲 │\n" +
+"│──────────────────┘";
 
         const info = await message.reply(msg);
         
@@ -122,11 +123,11 @@ categoryList +
   },
 
   onReply: async function ({ api, event, message, Reply }) {
-    const { author, categories } = Reply;
+    const { author, categories, messageID } = Reply;
     
     if (event.senderID !== author) return;
     
-    const ALBUM_JSON_URL = "https://raw.githubusercontent.com/likhontheoldstyle/LIKHON-FMS-VIDEO-JSON/refs/heads/main/album/album.json";
+    const ALBUM_JSON_URL = "https://raw.githubusercontent.com/likhontheoldstyle/LIKHON-APiS-JSON/refs/heads/main/album/album.json";
 
     try {
       const choice = parseInt(event.body);
@@ -134,6 +135,8 @@ categoryList +
       if (isNaN(choice) || choice < 1 || choice > categories.length) {
         return message.reply("❌ Invalid number. Please reply with a valid number from the list.");
       }
+
+      await message.unsend(messageID);
 
       api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
@@ -219,13 +222,13 @@ async function sendVideoFromCategory(api, event, message, albumData, category, c
     const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
 
     await message.reply({
-      body: `╭────────────────────────────────────╮\n` +
-            `│        ${emoji} 𝐍𝐎𝐖 𝐏𝐋𝐀𝐘𝐈𝐍𝐆 ${emoji}         │\n` +
-            `├────────────────────────────────────┤\n` +
+      body: `╭────────────╮\n` +
+            `│   𝐍𝐎𝐖 𝐏𝐋𝐀𝐘𝐈𝐍𝐆      │\n` +
+            `├────────────┤\n` +
             `│  📌 𝐂𝐚𝐭𝐞𝐠𝐨𝐫𝐲: ${categoryName}             │\n` +
             `│  🎥 𝐓𝐨𝐭𝐚𝐥: ${albumData[category].length} 𝐯𝐢𝐝𝐞𝐨𝐬        │\n` +
             `│  🎲 𝐑𝐚𝐧𝐝𝐨𝐦 𝐬𝐞𝐥𝐞𝐜𝐭𝐞𝐝               │\n` +
-            `╰────────────────────────────────────╯\n\n` +
+            `╰────────────╯\n\n` +
             `𝐄𝐧𝐣𝐨𝐲 𝐲𝐨𝐮𝐫 𝐯𝐢𝐝𝐞𝐨! 🎥`,
       attachment: fs.createReadStream(videoPath)
     });
