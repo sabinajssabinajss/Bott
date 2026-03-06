@@ -2,7 +2,7 @@ const { getTime, drive } = global.utils;
 
 module.exports = {
 	config: {
-		name: "leave | Update By LIKHON AHMED",
+		name: "leave",
 		version: "1.4",
 		author: "NTKhang",
 		category: "events"
@@ -30,28 +30,34 @@ module.exports = {
 	},
 
 	onStart: async ({ threadsData, message, event, api, usersData, getLang }) => {
-		if (event.logMessageType == "log:unsubscribe")
+		if (event.logMessageType == "log:unsubscribe") {
 			return async function () {
 				const { threadID } = event;
 				const threadData = await threadsData.get(threadID);
+				
 				if (!threadData.settings.sendLeaveMessage)
 					return;
+					
 				const { leftParticipantFbId } = event.logMessageData;
+				
 				if (leftParticipantFbId == api.getCurrentUserID())
 					return;
+					
 				const hours = getTime("HH");
-
 				const threadName = threadData.threadName;
-				const userName = await usersData.getName(leftParticipantFbId);
-				const firstName = userName.split(" ")[0]; // শুধু প্রথম নাম
+				
+				let userName = await usersData.getName(leftParticipantFbId);
+				let firstName = "Unknown";
+				
+				if (userName && userName.split) {
+					firstName = userName.split(" ")[0];
+				}
 
 				let leaveMessage;
 
-				// যদি নিজে leave করে
 				if (leftParticipantFbId == event.author) {
 					leaveMessage = `Ki re ${firstName} leave nilo kn! 😾`;
 				}
-				// যদি kick খায়
 				else {
 					leaveMessage = `Toke kick korse naki re ${firstName}?! 😹`;
 				}
@@ -64,7 +70,7 @@ module.exports = {
 					}]
 				};
 
-				if (threadData.data.leaveAttachment) {
+				if (threadData.data && threadData.data.leaveAttachment) {
 					const files = threadData.data.leaveAttachment;
 					const attachments = files.reduce((acc, file) => {
 						acc.push(drive.getFile(file, "stream"));
@@ -74,7 +80,9 @@ module.exports = {
 						.filter(({ status }) => status == "fulfilled")
 						.map(({ value }) => value);
 				}
+				
 				message.send(form);
 			};
+		}
 	}
 };
