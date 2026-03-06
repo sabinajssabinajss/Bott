@@ -12,7 +12,8 @@ module.exports = {
     team: "NoobCore", 
     shortDescription: "🗓 English Calendar",
     longDescription: "Fetches calendar image for Asia/Dhaka",
-    guide: { en: "{p}calendar" }
+    guide: { en: "{p}calendar" },
+    category: "utility"
   },
 
   onStart: async function ({ api, event }) {
@@ -37,7 +38,7 @@ module.exports = {
     } catch (err) {
       console.error("Calendar command error:", err.message);
       api.sendMessage(
-        "❌ Failed to fetch calendar image. Please try again later. ",
+        "❌ Failed to fetch calendar image. Please try again later.",
         event.threadID,
         event.messageID
       );
