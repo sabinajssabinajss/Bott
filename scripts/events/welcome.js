@@ -2,120 +2,139 @@ const { getTime } = global.utils;
 const axios = require("axios");
 
 if (!global.temp.welcomeEvent)
-	global.temp.welcomeEvent = {};
+    global.temp.welcomeEvent = {};
 
 module.exports = {
-	config: {
-		name: "welcome",
-		version: "2.1",
-		author: "NTKhang + Modified by BADOL",
-		category: "events"
-	},
+    config: {
+        name: "welcome",
+        version: "2.5",
+        author: "NTKhang + Modified by BADOL",
+        category: "events"
+    },
 
-	langs: {
-		vi: {
-			session1: "sáng",
-			session2: "trưa",
-			session3: "chiều",
-			session4: "tối"
-		},
-		en: {
-			session1: "morning",
-			session2: "noon",
-			session3: "afternoon",
-			session4: "evening"
-		}
-	},
+    langs: {
+        vi: { session1: "sáng", session2: "trưa", session3: "chiều", session4: "tối" },
+        en: { session1: "morning", session2: "noon", session3: "afternoon", session4: "evening" }
+    },
 
-	onStart: async ({ threadsData, message, event, api, getLang }) => {
-		if (event.logMessageType == "log:subscribe") {
-			return async function () {
-				const hours = getTime("HH");
-				const { threadID } = event;
-				const { nickNameBot } = global.GoatBot.config;
-				const prefix = global.utils.getPrefix(threadID);
-				const dataAddedParticipants = event.logMessageData.addedParticipants;
+    onStart: async ({ threadsData, message, event, api, getLang, usersData }) => {
+        if (event.logMessageType == "log:subscribe") {
+            const hours = getTime("HH");
+            const { threadID } = event;
+            const { nickNameBot } = global.GoatBot.config;
+            const prefix = global.utils.getPrefix(threadID);
+            const dataAddedParticipants = event.logMessageData.addedParticipants;
 
-				if (dataAddedParticipants.some(item => item.userFbId == api.getCurrentUserID())) {
-					if (nickNameBot)
-						api.changeNickname(nickNameBot, threadID, api.getCurrentUserID());
-					return message.send(`🤖 ধন্যবাদ আমাকে গ্রুপে অ্যাড করার জন্য!\nPrefix: ${prefix}\nলিস্ট দেখতে লিখুন: ${prefix}help`);
-				}
+            if (dataAddedParticipants.some(item => item.userFbId == api.getCurrentUserID())) {
+                if (nickNameBot) api.changeNickname(nickNameBot, threadID, api.getCurrentUserID());
+                
+                const botAddedMessage = `╭─━━━━━━━━━━━━━━━━━━━─╮
+┃ 𝐀𝐃𝐃𝐄𝐃 𝐒𝐔𝐂𝐂𝐄𝐒𝐒𝐅𝐔𝐋 🤖  ┃
+┃━━━━━━━━━━━━━━━━━━━┃
+┃
+┃𝐓𝐇𝐀𝐍𝐊𝐒 𝐅𝐎𝐑 𝐀𝐃𝐃𝐈𝐍𝐆 𝐌𝐄 
+┃𝐓𝐎 𝐓𝐇𝐄 𝐆𝐑𝐎𝐔𝐏 🌷🤍
+┃
+┃━━━━━━━━━━━━━━━━━━━━━┃
+┃
+┃ 𝐏𝐑𝐄𝐅𝐈𝐗 : ${prefix}
+┃
+┃━━━━━━━━━━━━━━━━━━━┃
+┃ 𝐓𝐘𝐏𝐄 𝐇𝐄𝐋𝐏 𝐒𝐄𝐄   🤖
+╰─━━━━━━━━━━━━━━━━━━━─╯`;
+                
+                return message.send(botAddedMessage);
+            }
 
-				if (!global.temp.welcomeEvent[threadID])
-					global.temp.welcomeEvent[threadID] = {
-						joinTimeout: null,
-						dataAddedParticipants: []
-					};
+            if (!global.temp.welcomeEvent[threadID])
+                global.temp.welcomeEvent[threadID] = {
+                    joinTimeout: null,
+                    dataAddedParticipants: []
+                };
 
-				global.temp.welcomeEvent[threadID].dataAddedParticipants.push(...dataAddedParticipants);
-				clearTimeout(global.temp.welcomeEvent[threadID].joinTimeout);
+            global.temp.welcomeEvent[threadID].dataAddedParticipants.push(...dataAddedParticipants);
+            clearTimeout(global.temp.welcomeEvent[threadID].joinTimeout);
 
-				global.temp.welcomeEvent[threadID].joinTimeout = setTimeout(async function () {
-					const threadData = await threadsData.get(threadID);
-					if (threadData.settings.sendWelcomeMessage == false)
-						return;
+            global.temp.welcomeEvent[threadID].joinTimeout = setTimeout(async function () {
+                const threadData = await threadsData.get(threadID);
+                if (threadData.settings.sendWelcomeMessage === false) return;
 
-					const dataAddedParticipants = global.temp.welcomeEvent[threadID].dataAddedParticipants;
-					const dataBanned = threadData.data.banned_ban || [];
-					const threadName = threadData.threadName;
+                const addedParticipants = global.temp.welcomeEvent[threadID].dataAddedParticipants;
+                const threadName = threadData.threadName || "এই গ্রুপে";
+                
+                const addedByID = event.author; 
+                let addedByName = "Unknown User";
 
-					const userName = [];
-					const mentions = [];
+                try {
+                    if (addedByID) {
+                        const info = await usersData.get(addedByID);
+                        if (info && info.name) {
+                            addedByName = info.name;
+                        } else {
+                            const apiInfo = await api.getUserInfo(addedByID);
+                            addedByName = apiInfo[addedByID].name;
+                        }
+                    }
+                } catch (e) {
+                    console.log("Error getting adder name:", e);
+                }
 
-					const addedByID = event.logMessageData.author;
-					const addedByInfo = await api.getUserInfo(addedByID);
-					const addedByName = addedByInfo[addedByID]?.name || "Unknown";
-					const addedByMention = { tag: addedByName, id: addedByID };
+                const userName = [];
+                const mentions = [];
 
-					for (const user of dataAddedParticipants) {
-						if (dataBanned.some(item => item.id == user.userFbId)) continue;
-						userName.push(user.fullName);
-						mentions.push({ tag: user.fullName, id: user.userFbId });
-					}
+                for (const user of addedParticipants) {
+                    userName.push(user.fullName);
+                    mentions.push({ tag: user.fullName, id: user.userFbId });
+                }
 
-					if (userName.length === 0) return;
+                const session = hours <= 10 ? getLang("session1") : hours <= 12 ? getLang("session2") : hours <= 18 ? getLang("session3") : getLang("session4");
+                const threadInfo = await api.getThreadInfo(threadID);
 
-					const session =
-						hours <= 10
-							? getLang("session1")
-							: hours <= 12
-								? getLang("session2")
-								: hours <= 18
-									? getLang("session3")
-									: getLang("session4");
+                const welcomeMessage = `╭─━━━━━━━━━━━━━━━━━━━─╮
+┃     𝐖𝐄𝐋𝐂𝐎𝐌𝐄 🎉    ┃
+┃━━━━━━━━━━━━━━━━━━━┃
+┃ 💳 𝐍𝐀𝐌𝐄 : ${userName.join(", ")}
+┃
+┃ 🏡 𝐆𝐑𝐎𝐔𝐏 : ${threadName}
+┃
+┃ 👥 𝐓𝐎𝐓𝐀𝐋 𝐌𝐄𝐌𝐁𝐄𝐑 : ${threadInfo.participantIDs.length} জন
+┃
+┃ ⏰ 𝐓𝐈𝐌𝐄 : ${session}
+┃
+┃🐸  𝐇𝐀𝐕𝐄 𝐀 𝐍𝐈𝐂𝐄 𝐃𝐀𝐘. 
+┃━━━━━━━━━━━━━━━━━━━━━┃
+┃
+┃ ➕ 𝐀𝐃𝐃𝐄𝐃 𝐁𝐘 : ${addedByName}
+┃
+┃━━━━━━━━━━━━━━━━━━━┃
+┃ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐂𝐀𝐏𝐓𝐔𝐑𝐄 𝐁𝐘 𝐇𝐈𝐌𝐔
+╰─━━━━━━━━━━━━━━━━━━━─╯`;
 
-					const threadInfo = await api.getThreadInfo(threadID);
-					const totalMembers = threadInfo.participantIDs.length;
+                const form = {
+                    body: welcomeMessage,
+                    mentions: [...mentions, { tag: addedByName, id: addedByID }]
+                };
 
-					const welcomeMessage = `
-🎉 স্বাগতম ${userName.join(", ")}!
-📌 গ্রুপ: ${threadName}
-👥 মোট সদস্য: ${totalMembers} জন
-🕒 সময়: ${session}
-😊 শুভ সময় কাটুক!
+                const imageLinks = [
+                    "https://i.ibb.co/9kQXbFny/saimx69x-2ac745.jpg",
+                    "https://i.ibb.co/1frcrQLN/saimx69x-4b107e.jpg",
+                    "https://i.ibb.co/mFXfW1G2/saimx69x-67a363.jpg",
+                    "https://i.ibb.co/7TdBqFy/saimx69x-6c70f7.jpg"
+                ];
 
-➕ Added by: ${addedByName}
-`;
+                const randomIndex = Math.floor(Math.random() * imageLinks.length);
+                const selectedImage = imageLinks[randomIndex];
 
-					const form = {
-						body: welcomeMessage.trim(),
-						mentions: [...mentions, addedByMention]
-					};
+                try {
+                    const res = await axios.get(selectedImage, { responseType: "stream" });
+                    form.attachment = res.data;
+                } catch (err) {
+                    console.log("Error fetching image:", err);
+                }
 
-					const welcomeGifUrl = "https://drive.google.com/uc?export=view&id=15Fo07tRpUXjATufcKnF7rciLGnp4JeFI";
-
-					try {
-						const response = await axios.get(welcomeGifUrl, { responseType: "stream" });
-						form.attachment = response.data;
-					} catch (err) {
-						console.error("GIF লোড করতে সমস্যা হয়েছে:", err.message);
-					}
-
-					message.send(form);
-					delete global.temp.welcomeEvent[threadID];
-				}, 1500);
-			};
-		}
-	}
+                message.send(form);
+                delete global.temp.welcomeEvent[threadID];
+            }, 2000);
+        }
+    }
 };
