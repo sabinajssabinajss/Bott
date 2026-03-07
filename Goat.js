@@ -44,7 +44,51 @@ function validJSON(pathDir) {
 const { NODE_ENV } = process.env;
 const dirConfig = path.normalize(`${__dirname}/config.json`);
 const dirConfigCommands = path.normalize(`${__dirname}/configCommands.json`);
-const dirAccount = path.normalize(`${__dirname}/account.txt`);
+// Update account.txt path to appstate folder - now supporting multiple account files
+const appstateDir = path.normalize(`${__dirname}/appstate`);
+
+// Create appstate folder if it doesn't exist
+if (!fs.existsSync(appstateDir)) {
+	fs.mkdirSync(appstateDir, { recursive: true });
+}
+
+// Function to get all account files from appstate folder
+function getAccountFiles() {
+	try {
+		const files = fs.readdirSync(appstateDir);
+		// Filter only .txt files and sort them naturally (account1.txt, account2.txt, etc.)
+		const accountFiles = files
+			.filter(file => file.startsWith('account') && file.endsWith('.txt'))
+			.sort((a, b) => {
+				const numA = parseInt(a.match(/\d+/)?.[0] || '0');
+				const numB = parseInt(b.match(/\d+/)?.[0] || '0');
+				return numA - numB;
+			});
+		
+		if (accountFiles.length === 0) {
+			log.warn("APPSTATE", "No account files found in appstate folder!");
+			return [];
+		}
+		
+		log.info("APPSTATE", `Found ${accountFiles.length} account file(s): ${accountFiles.join(', ')}`);
+		return accountFiles;
+	} catch (err) {
+		log.error("APPSTATE", "Error reading appstate folder:", err);
+		return [];
+	}
+}
+
+// Get the first available account file
+const accountFiles = getAccountFiles();
+let activeAccountFile = accountFiles.length > 0 ? accountFiles[0] : null;
+const dirAccount = activeAccountFile ? path.normalize(`${appstateDir}/${activeAccountFile}`) : null;
+
+if (!dirAccount) {
+	log.error("APPSTATE", "No account file found! Please add account files (account1.txt, account2.txt, etc.) in the appstate folder.");
+	process.exit(0);
+}
+
+log.info("APPSTATE", `Using account file: ${activeAccountFile}`);
 
 for (const pathDir of [dirConfig, dirConfigCommands]) {
 	try {
@@ -84,7 +128,26 @@ global.GoatBot = {
 	callbackListenTime: {}, // store callback listen 
 	storage5Message: [], // store 5 message to check listening loop
 	fcaApi: null, // store fca api
-	botID: null // store bot id
+	botID: null, // store bot id
+	// Add these for multiple account support
+	accountFiles: accountFiles, // all available account files
+	currentAccountIndex: 0, // index of current active account
+	activeAccountFile: activeAccountFile // current active account file
+};
+
+// Function to switch to next account
+global.GoatBot.switchToNextAccount = function() {
+	const nextIndex = global.GoatBot.currentAccountIndex + 1;
+	if (nextIndex < global.GoatBot.accountFiles.length) {
+		global.GoatBot.currentAccountIndex = nextIndex;
+		global.GoatBot.activeAccountFile = global.GoatBot.accountFiles[nextIndex];
+		global.client.dirAccount = path.normalize(`${appstateDir}/${global.GoatBot.activeAccountFile}`);
+		log.warn("APPSTATE", `Switching to next account: ${global.GoatBot.activeAccountFile} (${nextIndex + 1}/${global.GoatBot.accountFiles.length})`);
+		return true;
+	} else {
+		log.error("APPSTATE", "No more accounts available to try!");
+		return false;
+	}
 };
 
 global.db = {
@@ -114,7 +177,7 @@ global.db = {
 global.client = {
 	dirConfig,
 	dirConfigCommands,
-	dirAccount,
+	dirAccount, // This will be updated when switching accounts
 	countDown: {},
 	cache: {},
 	database: {
