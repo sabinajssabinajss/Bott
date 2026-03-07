@@ -5,6 +5,7 @@ module.exports = {
     name: "bot",
     version: "3.7",
     author: "LIKHON AHMED",
+    noPrefix: false,
     countDown: 5,
     role: 0,
     description: "chat with bot using API + random replies + mention",
