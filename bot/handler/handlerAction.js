@@ -18,6 +18,9 @@ module.exports = (
 			: "./handlerEvents.js"
 	)(api, threadModel, userModel, dashBoardModel, globalModel, usersData, threadsData, dashBoardData, globalData);
 
+	// যে কমান্ডগুলো প্রিফিক্স ছাড়া কাজ করবে না
+	const noNoPrefixCommands = ['prefix', 'bot']; // এখানে আপনার কমান্ডের নাম দিন
+
 	// সব কমান্ডের নাম লোড করার ফাংশন
 	const getAllCommandNames = () => {
 		const commandNames = [];
@@ -56,9 +59,15 @@ module.exports = (
 			
 			// চেক করা যে প্রথম শব্দটি কোনো কমান্ডের নাম কিনা
 			if (commandNames.includes(firstWord)) {
-				// শুধুমাত্র ম্যাচ করা কমান্ডের জন্য প্রিফিক্স যোগ করা
-				event.body = global.GoatBot.config.prefix + event.body;
-				console.log(`No Prefix: Command "${firstWord}" detected, prefix added`);
+				// চেক করা যে এই কমান্ডটি কি noNoPrefixCommands লিস্টে আছে কিনা
+				if (noNoPrefixCommands.includes(firstWord)) {
+					// শুধুমাত্র ম্যাচ করা কমান্ডের জন্য প্রিফিক্স যোগ করা
+					event.body = global.GoatBot.config.prefix + event.body;
+					console.log(`No Prefix: Command "${firstWord}" is in no-prefix block list, prefix added`);
+				} else {
+					console.log(`No Prefix: Command "${firstWord}" allowed without prefix`);
+					// প্রিফিক্স যোগ করা হবে না, কারণ এটি allowed
+				}
 			}
 			// এলোমেলো টেক্সট, ইমোজি, লিংক ইগনোর করা হবে
 		}
