@@ -51,7 +51,7 @@
 		"tinyurl": "^1.1.7",
 		"totp-generator": "^0.0.13",
 		"websocket-stream": "^5.5.2",
-		"nayan-media-downloaders": "^1.0.0",
+		"nayan-media-downloaders": "latest",
 		"youtube-search-api": "^1.0.0",
 		"cors": "^2.8.5",
 		"uuid": "^9.0.1",
