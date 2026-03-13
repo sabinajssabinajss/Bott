@@ -1,0 +1,42 @@
+name: Node.js Continuous Loop
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+  repository_dispatch:
+    types: [restart_workflow]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+        
+    - run: npm install
+
+    - name: Run for 5 hours 58 minutes
+      timeout-minutes: 360
+      # Ekhane amra process-ti background-e rekhe sleep korabo
+      run: |
+        npm start & 
+        sleep 21480
+        kill $! || true
+
+    - name: Trigger Next Action
+      # Ekhane logic change kora hoyeche:
+      # Sudhu Success ba Failure hole run hobe, manually CANCEL korle hobe na.
+      if: success() || failure()
+      run: |
+        curl -X POST \
+        -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/${{ github.repository }}/dispatches \
+        -d '{"event_type": "restart_workflow"}'
